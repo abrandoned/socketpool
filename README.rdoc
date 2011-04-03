@@ -1,6 +1,35 @@
 = socketpool
 
-Description goes here.
+Class for managing a pool of sockets
+
+== Using socketpool
+
+Install:
+
+  gem install socketpool
+
+Initialize a socket pool:
+  
+  pool = SocketPool.new("127.0.0.1", "11211")  # => a socket pool with a max size of 2, connected via tcp to 127.0.0.1:11211
+  pool = SocketPool.new("127.0.0.1", "11211", :size => 10) # => a socket pool with a max size of 10, connected via tcp to 127.0.0.1:11211 
+  pool = SocketPool.new("127.0.0.1", "11211", :size => 10, :type => :udp) # => a socket pool with a max size of 10, connected via udp to 127.0.0.1:11211 
+
+  s = pool.checkout   #=> gets socket from pool
+  pool.checkin(s)    #=> puts socket back in pool
+
+Initialization Options: 
+  :size #=> determines the max size of the socket pool (number of sockets that can eventually be in the pool)
+  :type #=> the "type" of socket in the pool: must be one of [:udp, :udp6, :tcp, :tcp6, :unix, :unigram]
+        #=> :unigram specifies a datagram unix socket; if using a unix socket then set host and port to the "path"
+  :eager #=> default false, if set to "true" then all sockets will be initialized on pool initialization
+  :timeout #=> defaults to 5.0, the number of seconds to wait for an unused socket from the pool to be freed
+  :socketopts #=> an array of options to be set (via setsockopts) on each socket initialization
+              #=> example: [{:level => Socket::IPPROTO_TCP, :optname => Socket::TCP_NODELAY, :optval => 1}]
+
+== Credits
+  "socketpool" is heavily influenced by utils/pool.rb from MongoDB (Apache 2.0 licensed).  
+  The socket checkout/checkin functionality is a direct copy, unfortunately all of the functionality I wanted (like eager initialization) was not
+  implemented so I augmented it for "socketpool".
 
 == Contributing to socketpool
  
@@ -11,9 +40,4 @@ Description goes here.
 * Commit and push until you are happy with your contribution
 * Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
-
-== Copyright
-
-Copyright (c) 2011 Brandon Dewitt. See LICENSE.txt for
-further details.
 
