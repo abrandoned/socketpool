@@ -21,6 +21,7 @@ Initialization Options:
   :size #=> determines the max size of the socket pool (number of sockets that can eventually be in the pool)
   :type #=> the "type" of socket in the pool: must be one of [:udp, :udp6, :tcp, :tcp6, :unix, :unigram]
         #=> :unigram specifies a datagram unix socket; if using a unix socket then set host and port to the "path"
+
   :eager #=> default false, if set to "true" then all sockets will be initialized on pool initialization
   :timeout #=> defaults to 5.0, the number of seconds to wait for an unused socket from the pool to be freed
   :socketopts #=> an array of options to be set (via setsockopts) on each socket initialization
