@@ -27,9 +27,9 @@ Initialization Options:
               #=> example: [{:level => Socket::IPPROTO_TCP, :optname => Socket::TCP_NODELAY, :optval => 1}]
 
 == Credits
-  "socketpool" is heavily influenced by utils/pool.rb from MongoDB (Apache 2.0 licensed).  
-  The socket checkout/checkin functionality is a direct copy, unfortunately all of the functionality I wanted (like eager initialization) was not
-  implemented so I augmented it for "socketpool".
+* "socketpool" is heavily influenced by utils/pool.rb from MongoDB (Apache 2.0 licensed).  
+The socket checkout/checkin functionality is a direct copy, unfortunately all of the functionality I wanted (like eager initialization) was not
+implemented so I augmented it for "socketpool".
 
 == Contributing to socketpool
  
