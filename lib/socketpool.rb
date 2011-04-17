@@ -62,7 +62,7 @@ class SocketPool
   def checkin(socket, reset=false)
     @connection_mutex.synchronize do
       if reset
-        @socket.delete(socket)
+        @sockets.delete(socket)
         @checked_out.delete(socket)
         socket = checkout_new_socket
       end
