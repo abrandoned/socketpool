@@ -4,4 +4,4 @@ pkg
 *.*~
 *.rspec
 *.document
-
+.redcar/

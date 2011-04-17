@@ -58,13 +58,20 @@ class SocketPool
   end
   
   # Return a socket to the pool.
-  def checkin(socket)
+  # Allow for destroying a resetting socket if the application determines the connection is no good
+  def checkin(socket, reset=false)
     @connection_mutex.synchronize do
-      @checked_out.delete(socket)
-      @queue.signal
+      if reset
+        @socket.delete(socket)
+        @checked_out.delete(socket)
+        checkin(checkout_new_socket, false)
+      else
+        @checked_out.delete(socket)          
+        @queue.signal
+      end
     end
     true
-  end
+  end  
 
   # Adds a new socket to the pool and checks it out.
   #
@@ -83,9 +90,9 @@ class SocketPool
       raise ConnectionFailure, "Failed to connect to host #{@host} and port #{@port}: #{ex}"
     end
 
+    @checked_out << socket
     @sockets << socket
     @pids[socket] = Process.pid
-    @checked_out << socket
     socket
   end
 
