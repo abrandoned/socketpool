@@ -64,19 +64,16 @@ class SocketPool
       if reset
         @socket.delete(socket)
         @checked_out.delete(socket)
-        checkin(checkout_new_socket, false)
-      else
-        @checked_out.delete(socket)          
-        @queue.signal
+        socket = checkout_new_socket
       end
+
+      @checked_out.delete(socket)          
+      @queue.signal
     end
     true
   end  
 
   # Adds a new socket to the pool and checks it out.
-  #
-  # This method is called exclusively from #checkout;
-  # therefore, it runs within a mutex.
   def checkout_new_socket
     begin
     socket = Socket.new(so_domain(@socktype), so_type(@socktype), 0)
