@@ -59,15 +59,17 @@ class SocketPool
   
   # Return a socket to the pool.
   # Allow for destroying a resetting socket if the application determines the connection is no good
-  def checkin(socket, reset=false)
+  def checkin(sock, reset=false)
     @connection_mutex.synchronize do
       if reset
-        @sockets.delete(socket)
-        @checked_out.delete(socket)
-        socket = checkout_new_socket
+        @sockets.delete(sock)
+        @checked_out.delete(sock)
+        @pids.delete(sock)
+        sock.close
+        sock = checkout_new_socket
       end
 
-      @checked_out.delete(socket)          
+      @checked_out.delete(sock)          
       @queue.signal
     end
     true
@@ -76,13 +78,13 @@ class SocketPool
   # Adds a new socket to the pool and checks it out.
   def checkout_new_socket
     begin
-    socket = Socket.new(so_domain(@socktype), so_type(@socktype), 0)
-    @sockaddr ||= Socket.pack_sockaddr_in(@port, @host) if ![:unix, :unigram].include?(@socktype)
-    @sockaddr ||= Socket.pack_sockaddr_un(@host) if [:unix, :unigram].include?(@socktype)
-    socket.connect(@sockaddr)
-    if @sockopts.size > 0
-      @sockopts.each{ |opt| socket.setsockopt(opt[:level], opt[:optname], opt[:optval]) }  
-    end
+      socket = Socket.new(so_domain(@socktype), so_type(@socktype), 0)
+      @sockaddr ||= Socket.pack_sockaddr_in(@port, @host) if ![:unix, :unigram].include?(@socktype)
+      @sockaddr ||= Socket.pack_sockaddr_un(@host) if [:unix, :unigram].include?(@socktype)
+      socket.connect(@sockaddr)
+      if @sockopts.size > 0
+        @sockopts.each{ |opt| socket.setsockopt(opt[:level], opt[:optname], opt[:optval]) }  
+      end
     rescue => ex
       raise ConnectionFailure, "Failed to connect to host #{@host} and port #{@port}: #{ex}"
     end
