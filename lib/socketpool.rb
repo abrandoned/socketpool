@@ -25,7 +25,7 @@ class SocketPool
 
     # Pool size and timeout.
     @size      = opts[:size] || 2
-    @timeout   = opts[:timeout]   || 5.0
+    @timeout   = opts[:timeout] || 5
     @eager      = opts[:eager] || false
 
     # Mutex for synchronizing pool access
@@ -77,17 +77,13 @@ class SocketPool
 
   # Adds a new socket to the pool and checks it out.
   def checkout_new_socket
-    begin
-      socket = Socket.new(so_domain(@socktype), so_type(@socktype), 0)
-      @sockaddr ||= Socket.pack_sockaddr_in(@port, @host) if ![:unix, :unigram].include?(@socktype)
-      @sockaddr ||= Socket.pack_sockaddr_un(@host) if [:unix, :unigram].include?(@socktype)
-      socket.connect(@sockaddr)
-      if @sockopts.size > 0
-        @sockopts.each{ |opt| socket.setsockopt(opt[:level], opt[:optname], opt[:optval]) }  
-      end
-    rescue => ex
-      raise ConnectionFailure, "Failed to connect to host #{@host} and port #{@port}: #{ex}"
-    end
+    socket = Socket.new(so_domain(@socktype), so_type(@socktype), 0)
+
+    # Pack address for sockets and set any options passed
+    @sockaddr ||= Socket.pack_sockaddr_in(@port, @host) if ![:unix, :unigram].include?(@socktype)
+    @sockaddr ||= Socket.pack_sockaddr_un(@host) if [:unix, :unigram].include?(@socktype)
+    @sockopts.each{ |opt| socket.setsockopt(opt[:level], opt[:optname], opt[:optval]) } if @sockopts.size > 0 
+    socket.connect(@sockaddr)
 
     @checked_out << socket
     @sockets << socket
